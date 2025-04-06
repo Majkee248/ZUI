@@ -5,21 +5,18 @@ from datetime import datetime
 
 SIZE = 4
 STATS_FILE = "stats.json"
-WIN_TILE = 2048  # Tile value that counts as a "win"
+WIN_TILE = 2048
 
 def load_stats():
     if os.path.exists(STATS_FILE):
         try:
             with open(STATS_FILE, "r") as f:
                 data = json.load(f)
-                # Verify the loaded data has the correct structure
                 if isinstance(data, dict) and "games" in data:
                     return data
                 print("Warning: Stats file has incorrect format. Creating new file.")
         except (json.JSONDecodeError, IOError) as e:
             print(f"Error loading stats file: {e}. Creating new file.")
-    
-    # Return a fresh stats dictionary with the proper structure
     return {"games": [], "summary": {}}
 
 def save_stats(stats):
@@ -29,14 +26,11 @@ def save_stats(stats):
 def add_stat(score, moves, max_tile, moves_by_direction, won=False):
     try:
         stats = load_stats()
-        
-        # Ensure stats is properly structured
         if not isinstance(stats, dict):
             stats = {"games": [], "summary": {}}
         if "games" not in stats:
             stats["games"] = []
-        
-        # Add individual game data
+
         game_data = {
             "score": score,
             "moves": moves,
@@ -48,25 +42,23 @@ def add_stat(score, moves, max_tile, moves_by_direction, won=False):
             "moves_left": moves_by_direction.get("left", 0),
             "moves_right": moves_by_direction.get("right", 0)
         }
-        
+
         stats["games"].append(game_data)
-        
-        # Update summary statistics
+
         all_games = stats["games"]
         if not all_games:
             return
-        
-        # Calculate summary
+
         scores = [game["score"] for game in all_games]
         max_tiles = [game["max_tile"] for game in all_games]
         wins = sum(1 for game in all_games if game["won"])
-        
+
         moves_up = sum(game.get("moves_up", 0) for game in all_games)
         moves_down = sum(game.get("moves_down", 0) for game in all_games)
         moves_left = sum(game.get("moves_left", 0) for game in all_games)
         moves_right = sum(game.get("moves_right", 0) for game in all_games)
         total_moves = sum(game["moves"] for game in all_games)
-        
+
         stats["summary"] = {
             "games_played": len(all_games),
             "best_score": max(scores),
@@ -86,10 +78,9 @@ def add_stat(score, moves, max_tile, moves_by_direction, won=False):
             "avg_moves_left": moves_left / len(all_games),
             "avg_moves_right": moves_right / len(all_games)
         }
-        
-        # Sort by score for the top games list
+
         stats["games"].sort(key=lambda x: x["score"], reverse=True)
-        
+
         save_stats(stats)
     except Exception as e:
         print(f"Error saving game statistics: {e}")
@@ -99,10 +90,10 @@ def print_stats():
     if not stats or "games" not in stats or not stats["games"]:
         print("Zatím žádné uložené statistiky.")
         return
-    
+
     summary = stats.get("summary", {})
-    top_games = stats["games"][:5]  # Top 5 games by score
-    
+    sorted_games = sorted(stats["games"], key=lambda x: x["score"], reverse=True)
+
     print("\n=== STATISTIKY HRY 2048 ===")
     print(f"Počet odehraných her: {summary.get('games_played', 0)}")
     print(f"Nejlepší skóre: {summary.get('best_score', 0)}")
@@ -112,22 +103,40 @@ def print_stats():
     print(f"Prohry: {summary.get('losses', 0)}")
     print(f"Průměrná max hodnota: {summary.get('avg_max_tile', 0):.1f}")
     print(f"Průměrný počet tahů na hru: {summary.get('avg_moves_per_game', 0):.1f}")
-    
+
     print("\n--- Směry tahů ---")
     print(f"Nahoru: {summary.get('moves_up', 0)} (průměr: {summary.get('avg_moves_up', 0):.1f})")
     print(f"Dolů: {summary.get('moves_down', 0)} (průměr: {summary.get('avg_moves_down', 0):.1f})")
     print(f"Vlevo: {summary.get('moves_left', 0)} (průměr: {summary.get('avg_moves_left', 0):.1f})")
     print(f"Vpravo: {summary.get('moves_right', 0)} (průměr: {summary.get('avg_moves_right', 0):.1f})")
-    
-    print("\n--- TOP 5 HER ---")
-    for i, game in enumerate(top_games):
+
+    reached_2048_count = sum(1 for game in stats["games"] if game["max_tile"] >= 2048)
+    print(f"\nDosaženo 2048 nebo více: {reached_2048_count}x ({(reached_2048_count/len(stats['games'])*100):.1f}% her)")
+
+    print("\n--- ŽEBŘÍČEK TOP 5 HER PODLE SKÓRE ---")
+    for i, game in enumerate(sorted_games[:5]):
         print(f"{i+1}. Skóre: {game['score']} | Max hodnota: {game['max_tile']} | Tahy: {game['moves']} | Výhra: {'Ano' if game.get('won', False) else 'Ne'}")
+
+    all_max_tiles = sorted([game["max_tile"] for game in stats["games"]], reverse=True)
+    top_3_tiles = all_max_tiles[:3] if len(all_max_tiles) >= 3 else all_max_tiles
+    print("\n--- TOP 3 NEJVĚTŠÍ DOSAŽENÉ HODNOTY ---")
+    for i, tile in enumerate(top_3_tiles):
+        print(f"{i+1}. {tile}")
+
+    print("\n--- DETAIL VŠECH HER ---")
+    for i, game in enumerate(stats["games"]):
+        print(f"Hra #{i+1}:")
+        print(f"  Skóre: {game['score']}")
+        print(f"  Max hodnota: {game['max_tile']}")
+        print(f"  Celkem tahů: {game['moves']}")
+        print(f"  Tahy: nahoru={game.get('moves_up', 0)}, dolů={game.get('moves_down', 0)}, vlevo={game.get('moves_left', 0)}, vpravo={game.get('moves_right', 0)}")
+        print(f"  Distribuce směrů: nahoru={game.get('moves_up', 0)/game['moves']*100:.1f}%, dolů={game.get('moves_down', 0)/game['moves']*100:.1f}%, do stran={(game.get('moves_left', 0)+game.get('moves_right', 0))/game['moves']*100:.1f}%")
+        print(f"  Datum: {game.get('date', 'neznámé')}")
+        print(f"  Dosažena výhra (2048+): {'Ano' if game.get('won', False) or game['max_tile'] >= 2048 else 'Ne'}")
+        print()
+
     print("=== KONEC STATISTIK ===\n")
 
-# Keep all the other functions the same...
-# -------------------------------------------------------------------------
-# Inicializace a kontrola boardu
-# -------------------------------------------------------------------------
 def init_board():
     board = [[0]*SIZE for _ in range(SIZE)]
     spawn_new_tile(board)
@@ -157,9 +166,6 @@ def can_move(board):
 def copy_board(board):
     return [row[:] for row in board]
 
-# -------------------------------------------------------------------------
-# Pohyby a slučování se skóre
-# -------------------------------------------------------------------------
 def compress(row):
     filtered = [x for x in row if x!=0]
     filtered += [0]*(SIZE-len(filtered))
@@ -205,15 +211,11 @@ def move_up(board, score):
     return final_b,ch,score
 
 def move_down(board, score):
-    # Dolů v AI nepoužíváme.
     trans=transpose(board)
     temp_b,ch,score=move_right(trans,score)
     final_b=transpose(temp_b)
     return final_b,ch,score
 
-# -------------------------------------------------------------------------
-# Heuristika
-# -------------------------------------------------------------------------
 def merges_count(board):
     cnt=0
     for r in range(SIZE):
@@ -240,113 +242,100 @@ def get_max_tile(board):
     return max(max(row) for row in board)
 
 def evaluate_board(board):
-    val=0.0
-    max_tile=get_max_tile(board)
-    if board[0][0]==max_tile:
-        val+=max_tile*3
-
-    merges=merges_count(board)
-    val+=merges*15
-
-    fill=row_fill_bonus(board)
-    val+=fill*5
-
-    mon=top_row_monotonicity(board)
-    val+=mon*20
-
+    val = 0.0
+    max_tile = get_max_tile(board)
+    weights = [
+        [16, 15, 14, 13],
+        [9,  10, 11, 12],
+        [8,  7,  6,  5],
+        [1,  2,  3,  4]
+    ]
+    for r in range(SIZE):
+        for c in range(SIZE):
+            if board[r][c] > 0:
+                val += board[r][c] * weights[r][c]
+    if board[0][0] == max_tile:
+        val += max_tile * 5
+    for c in range(SIZE):
+        if board[0][c] > 0:
+            val += board[0][c] * 2
+    h_mon = 0
+    for r in range(SIZE):
+        for c in range(SIZE-1):
+            if board[r][c] >= board[r][c+1]:
+                if r == 0:
+                    h_mon += 20
+                else:
+                    h_mon += 5
+    val += h_mon
+    v_mon = 0
+    for c in range(SIZE):
+        for r in range(SIZE-1):
+            if board[r][c] >= board[r+1][c]:
+                if c == 0:
+                    v_mon += 20
+                else:
+                    v_mon += 5
+    val += v_mon
+    merges = merges_count(board)
+    val += merges * 25
+    top_merges = merges_row0_row1(board)
+    val += top_merges * 200
+    empty_count = sum(row.count(0) for row in board)
+    val += empty_count * 15
+    blocked_tiles = 0
+    for r in range(SIZE):
+        for c in range(SIZE):
+            if board[r][c] != 0:
+                is_blocked = True
+                for dr, dc in [(0,1), (1,0), (0,-1), (-1,0)]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < SIZE and 0 <= nc < SIZE:
+                        if board[nr][nc] == 0 or board[nr][nc] == board[r][c]:
+                            is_blocked = False
+                            break
+                if is_blocked:
+                    blocked_tiles += 1
+    val -= blocked_tiles * 10
+    snake_bonus = 0
+    snake_path = [
+        (0,0), (0,1), (0,2), (0,3),
+        (1,3), (1,2), (1,1), (1,0),
+        (2,0), (2,1), (2,2), (2,3),
+        (3,3), (3,2), (3,1), (3,0)
+    ]
+    for i in range(len(snake_path)-1):
+        r1, c1 = snake_path[i]
+        r2, c2 = snake_path[i+1]
+        if board[r1][c1] >= board[r2][c2] and board[r1][c1] != 0:
+            snake_bonus += 10
+    val += snake_bonus
     return val
 
-# -------------------------------------------------------------------------
-# if row=1 and row=0 -> forced up?
-# We'll keep that, but also consider left or right with the same priority
-# -------------------------------------------------------------------------
-def can_merge_row0_row1(board):
-    """
-    Pokud row=1 a row=0 lze sloučit v nějakém sloupci, up je extra zajímavé.
-    """
-    for c in range(SIZE):
-        if board[0][c]!=0 and board[0][c]==board[1][c]:
-            return True
-    return False
-
-def get_preferred_moves(board, score):
-    """
-    VRÁTÍ VŠECHNY MOŽNÉ TAHY z [UP, LEFT, RIGHT],
-    abychom left a right NEpreferovali, ale nechali Expectimaxu.
-    Navíc, pokud row=1 a row=0 je co sloučit, PŘIDÁME UP ZNOVU
-    (což je menší hack) => up se objeví dvakrát => Expectimax mu
-    dá vyšší šanci?
-    Ovšem dvojnásobné up by jen dublovalo stejný stav => raději
-    ho přidáme jen jednou s info "FORCED_UP"?
-    Ale to by Expectimax nepoznal rozdíl.
-
-    Jednodušší:
-    1) up, left, right => vyzkoušet,
-    2) pokud can_merge_row0_row1 => up má speciální "tag" =>
-       ohodnotíme ho plus?
-
-    Můžeme to udělat tak,
-      - vyrobíme list moves,
-      - up, left, right => pokud changed => moves.append
-    3) Pokud can_merge_row0_row1 =>
-         dáme up do moves znovu s drobným "forced" bonusem v heuristice?
-
-    Ale to by znepřehlednilo logiku.
-    Lepší bude v heuristice =>
-        pokud row=1 a row=0 je sloučit => scoreboard + extra
-        => up se stane nejlepší volbou.
-    => realizujeme v evaluate_board ->
-       jestli "row1" a "row0" je stejná nenul => + bonus.
-
-    Tím Expectimax rozhodne pro up.
-
-    Zkusíme snadný přístup:
-    Vratime up, left, right.
-    down = None
-    Expectimax vybere.
-    """
-    from copy import deepcopy
-
-    possible_moves = []
-    # up
-    b_up, ch_up, sc_up = move_up(deepcopy(board), score)
-    if ch_up:
-        possible_moves.append(("UP", b_up, sc_up))
-
-    # left
-    b_left, ch_left, sc_left = move_left(deepcopy(board), score)
-    if ch_left:
-        possible_moves.append(("LEFT", b_left, sc_left))
-
-    # right
-    b_right, ch_right, sc_right = move_right(deepcopy(board), score)
-    if ch_right:
-        possible_moves.append(("RIGHT", b_right, sc_right))
-
-    return possible_moves
-
-# Pro "row=1 a row=0" merges => dodelame mini-bonus v evaluate
 def merges_row0_row1(board):
-    """
-    Vrátí, kolik sloupců v row=0 a row=1 je stejná nenulová hodnota.
-    """
     ccount=0
     for c in range(SIZE):
         if board[0][c]!=0 and board[0][c]==board[1][c]:
             ccount+=1
     return ccount
 
-# Uprava evaluate - specialni bonus
-old_eval = evaluate_board
-def evaluate_board_plus(board):
-    base = old_eval(board)
-    # Pokud row=0 a row=1 se můžou sloučit, +100 bodů za každý takový sloupec
-    # Tím se "up" stane pro AI výrazně atraktivní
-    c = merges_row0_row1(board)
-    return base + c*100
-
-# nahradime evaluate ve zbytku
-evaluate_board = evaluate_board_plus
+def get_preferred_moves(board, score):
+    from copy import deepcopy
+    possible_moves = []
+    b_up, ch_up, sc_up = move_up(deepcopy(board), score)
+    if ch_up:
+        possible_moves.append(("UP", b_up, sc_up))
+    b_left, ch_left, sc_left = move_left(deepcopy(board), score)
+    if ch_left:
+        possible_moves.append(("LEFT", b_left, sc_left))
+    b_right, ch_right, sc_right = move_right(deepcopy(board), score)
+    if ch_right:
+        possible_moves.append(("RIGHT", b_right, sc_right))
+    if not possible_moves:
+        b_down, ch_down, sc_down = move_down(deepcopy(board), score)
+        if ch_down:
+            possible_moves.append(("DOWN", b_down, sc_down))
+    return possible_moves
 
 def get_all_new_tiles(board):
     empties=[(r,c) for r in range(SIZE) for c in range(SIZE) if board[r][c]==0]
@@ -374,11 +363,9 @@ def choose_depth(board):
 def expectimax(board, score, depth):
     if depth==0 or not can_move(board):
         return evaluate_board(board), board
-
     moves=get_preferred_moves(board, score)
     if not moves:
         return evaluate_board(board), board
-
     best_eval=-1e9
     best_state=board
     for (mname, new_b, new_s) in moves:
@@ -396,30 +383,21 @@ def expectimax(board, score, depth):
             if exp_val>best_eval:
                 best_eval=exp_val
                 best_state=new_b
-
     return best_eval, best_state
-
 
 def ai_move(board, score):
     depth=choose_depth(board)
     val,best_b=expectimax(board, score, depth)
     if best_b==board:
         return board,False,score
-
     from copy import deepcopy
-    # re-check moves up, left, right
     possible = [move_up, move_left, move_right]
     for func in possible:
         test_b,ch,new_score=func(deepcopy(board), score)
         if ch and test_b==best_b:
             return test_b,True,new_score
-    
-    # If we couldn't determine which move led to best_b, recalculate the score
-    # (This shouldn't happen but is a fallback)
-    # Try all possible moves to find which one creates this board state
     for func in possible:
         test_b,ch,new_score=func(deepcopy(board), score)
         if ch and test_b==best_b:
             return test_b,True,new_score
-    
-    return best_b,True,score  # Fallback if we can't determine the correct score
+    return best_b,True,score
