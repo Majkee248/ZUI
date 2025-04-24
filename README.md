@@ -1,7 +1,7 @@
 # Report - Jan Piperek (PIP0016)
 
 ---
-
+## Integrace prvního solveru
 ## Souhrnné statistiky
 
 - **Počet odehraných her**: `30`
@@ -117,12 +117,12 @@
 Pro dosažení těchto výsledků byla implementována AI využívající následující techniky:
 
 ### 1. Expectimax algoritmus
-- Stochastická varianta minimax algoritmu
+- Pravděpodobnostní varianta minimax algoritmu
 - Zohledňuje náhodné přidávání nových dlaždic
 - Dynamická hloubka prohledávání podle aktuálního stavu hry
 
 ### 2. Heuristická evaluační funkce
-- Poziční váhy pro jednotlivá políčka ("hadovitý" vzor)
+- Poziční váhy pro jednotlivá políčka
 - Bonus za monotónnost (sestupnou posloupnost hodnot)
 - Penalizace za zablokované dlaždice
 - Bonus za prázdná políčka
@@ -151,6 +151,49 @@ Analýza dat jasně ukazuje preferenci směrů:
    - Průměrná hra: 1821 tahů
    - Nejúspěšnější hry: 3200-3400 tahů
 
+## Integrace druhého Monte Carlo solveru
+
+### Metoda Monte Carlo
+
+Pro účely testování AI jsem použil další metodu – Monte Carlo solver, který funguje jinak než dříve zmíněný Expectimax algoritmus. Monte Carlo metoda vyhodnocuje tahy pomocí náhodných simulací budoucích herních stavů, což znamená, že od aktuálního stavu hry udělá několik náhodných tahů a poté vyhodnotí průměrné skóre těchto simulací. Tah, který v simulacích dosáhne v průměru nejvyššího skóre, je vybrán jako nejlepší tah.
+
+### Princip fungování Monte Carlo solveru
+- **Simulace náhodných her**: Solver provádí velké množství náhodných tahů z každého potenciálního tahu, aby získal odhad, jak dobrý každý tah může být.
+- **Průměrné skóre**: Po mnoha simulacích vybere solver tah s nejlepším průměrným výsledkem.
+- **Omezená hloubka simulací**: Aby simulace netrvaly příliš dlouho, nastavuje se maximální počet tahů po kterých se simulace ukončí.
+
+### Statistika Monte Carlo solveru (30 her)
+
+- **Průměrné skóre**: `7135.1`
+- **Průměrná max dlaždice**: `588.8`
+- **Dosaženo dlaždice 2048 a vyšší**: `0x (0.0%)`
+- **Nejvyšší skóre**: `13952`
+- **Nejvyšší dosažená dlaždice**: `1024`
+- **Průměrný počet tahů na hru**: `484`
+
+### Top 3 výsledky Monte Carlo solveru:
+
+1. Skóre: `13952`, max dlaždice: `1024`, tahy: `794`
+2. Skóre: `12080`, max dlaždice: `1024`, tahy: `713`
+3. Skóre: `12028`, max dlaždice: `1024`, tahy: `705`
+
+### Porovnání s Expectimax solverem:
+| Kritérium          | Expectimax Solver | Monte Carlo Solver |
+|--------------------|-------------------|--------------------|
+| Průměrné skóre     | `35492.8`         | `7135.1`           |
+| Výhra (2048+)      | `70 %`            | `0 %`              |
+| Průměrná max dlaždice | `2150.4`         | `588.8`            |
+
+### Analýza výsledků a nevýhody Monte Carlo solveru
+
+Monte Carlo solver se ukázal jako výrazně slabší než Expectimax algoritmus. Nedokázal dosáhnout ani jednou dlaždice 2048. Zde jsou hlavní důvody, proč Monte Carlo solver neuspěl:
+
+**Krátkozrakost rozhodnutí**: Solver nemá schopnost strategicky plánovat dlouhodobé cíle, jako je systematické řazení větších dlaždic do rohu hrací desky.
+
+**Vysoká výpočetní náročnost**: Pro dosažení přesnějších výsledků by bylo třeba velmi velkého množství simulací, což by vedlo k časové a výpočetní neefektivitě.
+
+**Náhodnost**: Monte Carlo solver spoléhá na náhodné tahy, což může vést k neoptimálním rozhodnutím a nižšímu skóre.
+
 ## 5. Zamyšlení nad tím, co je vlastně AI a kde ji využít
 
 ### 5.1 Co považuju za umělou inteligenci
@@ -165,7 +208,7 @@ Za mě je to jednoznačná odpoveď a tou je ne! Lidé fungovali mnoho let bez A
 - **Lékařství**: V lákařství se mohou neuronové sítě používat pro odhadování diagnóz na základě symptomů nebo analýzu lékařských snímků (např. CT, MRI) a detekci abnormalit, nebo detekovat a odhadovat velikosti
 tumorů.
 - **Finanční trhy**: Predikce cen akcií nebo jiných aktiv na základě historických dat a vzorů.
-- **Reinforcement learning (posilované učení)**: kdy síť (agent) dostává odměnu za každou akci a postupně se učí strategii, která maximalizuje součet odměn (v případě 2048 to je skóre) a penalizace za špatné rozhodnutí.
+- **Reinforcement learning**: kdy síť dostává odměnu za každou akci a postupně se učí strategii, která maximalizuje součet odměn (v případě 2048 to je skóre) a penalizace za špatné rozhodnutí.
 - **Generování obsahu**: Například generování textu, hudby nebo obrazů na základě vzorů v tréninkových datech. Generativní modely jako GAN (Generative Adversarial Networks) se používají k vytváření realistických obrazů nebo videí.
 - **Autonomní vozidla**: Neuronové sítě se používají k analýze obrazových dat z kamer a senzorů, aby vozidlo mohlo rozpoznávat objekty, značky a překážky v reálném čase.
 
@@ -173,17 +216,20 @@ tumorů.
 - **Herní AI**: Vytváření agentů, kteří se učí hrát hry jako šachy na úrovni lidských mistrů.
 - **Robotika**: Učení robotů, jak se pohybovat v prostředí a vykonávat úkoly, jako je manipulace s objekty nebo navigace.
 - **Autonomní vozidla**: Učení vozidel, jak se orientovat v městském prostředí a reagovat na různé situace.
-- ** Reklama**: Optimalizace reklamních kampaní na základě interakcí uživatelů a jejich reakcí na různé reklamy.
+- **Reklama**: Optimalizace reklamních kampaní na základě interakcí uživatelů a jejich reakcí na různé reklamy.
 - **Finanční obchodování**: Učení algoritmů, jak obchodovat na burze na základě historických dat a aktuálních tržních podmínek.
 
 ## 6. Jak jsem použil AI u 2048
 
-Nejprve jsem si vytvořil základní hru 2048 – tedy zajištění herní desky, počítání skóre a zpracování tahů. Potom jsem do programu přidal umělou inteligenci založenou na **expectimaxu**. Ten funguje podobně jako minimax, ale navíc počítá s tím, že na hrací desku se náhodně vkládají nové dlaždice (prvek náhody). 
+Nejprve jsem si vytvořil základní hru 2048, tedy vytvoření herní desky, počítání skóre a zpracování tahů. Potom jsem do programu přidal umělou inteligenci založenou na **expectimaxu**. Ten funguje podobně jako minimax, ale navíc počítá s tím, že na hrací desku se náhodně vkládají nové dlaždice (prvek náhody). 
 
-Aby AI dokázala vyhodnotit, který tah je v dané situaci nejlepší, přidal jsem **heuristickou evaluační funkci**. Ta zohledňuje například rozložení velkých dlaždic na desce (preferuje jejich umisťování „nahoru a do rohu“), počet možných sloučení, monotónnost řádků a sloupců nebo i to, kolik prázdných polí zůstává. 
+Aby AI dokázala vyhodnotit, který tah je v dané situaci nejlepší, přidal jsem **heuristickou evaluační funkci**. Ta zohledňuje například rozložení velkých dlaždic na desce (preferuje jejich umisťování „nahoru a do rohu“), počet možných sloučení, monotónnost řádků a sloupců nebo i to, kolik prázdných polí zůstává.
 
 **Adaptivní hloubka prohledávání** navíc zajišťuje, že když je na hrací desce hodně volného místa, algoritmus pracuje s menší hloubkou (aby běžel rychleji), a když už je volných políček méně, dokáže se podívat „hlouběji“ dopředu a zvolit tak tah, který vede k vyššímu skóre. Díky tomu se AI dokáže lépe rozhodovat i v napjatějších situacích hry.
 
-Samozřejmě ne vždy mi AI vrátila správnou odpoveď, proto jsem kód buď upravil sám, nebo AI použil k tomu, abych se podíval na to, co dělám špatně. Například jsem si uvědomil, že AI se snaží hrát do stran a dolů, což je v této hře špatně. Proto jsem přidal další podmínku, která zajišťuje, že AI se snaží hrát nahoru a do strany a dolů pouze v případě, že už není jiná možnost. 
+Implementoval jsem také **Monte Carlo solver**, který vyhodnocuje nejlepší tahy pomocí simulací náhodných herních průběhů. Monte Carlo solver mi pomohl lépe pochopit, jak může náhodnost ovlivnit rozhodování.
 
-Abych to shrnul, hru jsem si opět stáhnul, protože už to byla nějaká doba, co jsem ji hrál. Našel jsem si na internetu nejlepší strategii na dosažení destičky s hodnotou 2048, sám si je všechny vyzkoušel a poté jsem AI diktoval, jak má logiku naimplementovat, testoval jeho výsledky, které jsem upravil, případně zadal, kde je chyba a co by měl zlepšit.
+
+Samozřejmě ne vždy mi AI vrátila správnou odpoveď, proto jsem kód buď upravil sám, nebo AI použil k tomu, abych se podíval na to, co dělám špatně. Například jsem si uvědomil, že AI se snaží hrát do stran a dolů, což je v této hře špatně a nenechalo si to vymluvit. Proto jsem přidal další podmínku, která zajišťuje, že AI se snaží hrát nahoru a do strany a dolů pouze v případě, že už není jiná možnost. 
+
+Abych to shrnul, hru jsem si opět stáhnul, protože už to byla nějaká doba, co jsem ji hrál a potřeboval jsem si oživit ideální strategie k dosažení 2048 dlaždice. Našel jsem si také na internetu nejlepší strategie, sám si je všechny vyzkoušel a poté jsem AI diktoval, jak má logiku naimplementovat, testoval jeho výsledky, které jsem upravil, případně zadal, kde je chyba a co by měl zlepšit.
