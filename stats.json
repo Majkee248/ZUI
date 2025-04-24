@@ -1,0 +1,184 @@
+{
+    "games": [
+        {
+            "score": 6300,
+            "moves": 425,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 6988,
+            "moves": 473,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 7048,
+            "moves": 479,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 7044,
+            "moves": 478,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 7068,
+            "moves": 481,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 12028,
+            "moves": 705,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 5320,
+            "moves": 367,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 6996,
+            "moves": 481,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 2764,
+            "moves": 225,
+            "max_tile": 256,
+            "won": false
+        },
+        {
+            "score": 12004,
+            "moves": 711,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 2952,
+            "moves": 233,
+            "max_tile": 256,
+            "won": false
+        },
+        {
+            "score": 4520,
+            "moves": 301,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 6888,
+            "moves": 455,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 7060,
+            "moves": 482,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 3056,
+            "moves": 251,
+            "max_tile": 256,
+            "won": false
+        },
+        {
+            "score": 10292,
+            "moves": 591,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 7152,
+            "moves": 487,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 6904,
+            "moves": 465,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 13952,
+            "moves": 794,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 12080,
+            "moves": 713,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 6968,
+            "moves": 475,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 5212,
+            "moves": 350,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 6292,
+            "moves": 419,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 7032,
+            "moves": 476,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 5116,
+            "moves": 346,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 7016,
+            "moves": 477,
+            "max_tile": 512,
+            "won": false
+        },
+        {
+            "score": 10332,
+            "moves": 600,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 11980,
+            "moves": 704,
+            "max_tile": 1024,
+            "won": false
+        },
+        {
+            "score": 2840,
+            "moves": 222,
+            "max_tile": 256,
+            "won": false
+        },
+        {
+            "score": 2848,
+            "moves": 219,
+            "max_tile": 256,
+            "won": false
+        }
+    ]
+}
